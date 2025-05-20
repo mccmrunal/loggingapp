@@ -1,0 +1,17 @@
+{
+  "name": "loggingapp",
+  "version": "1.0.0",
+  "description": "A modern web application for viewing and analyzing application logs stored in MySQL database.",
+  "main": "index.js",
+  "scripts": {
+    "start": "concurrently \"cd backend && npm start\" \"cd frontend && npm start\"",
+    "install-all": "npm install && cd frontend && npm install && cd ../backend && npm install",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

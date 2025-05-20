@@ -1,0 +1,32 @@
+# Node modules
+node_modules/
+
+# Build output
+dist/
+build/
+out/
+
+# Editor folders
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environment and log files
+.env
+*.log
+
+# Test/coverage output
+coverage/
+*.coverage
+
+# Ignore all default-env.json files anywhere
+**/default-env.json
+
+# Ignore all package-lock.json if needed
+# **/package-lock.json
+
+# Ignore all .vscode folders recursively
+**/.vscode/# Node modules
+**/node_modules/
