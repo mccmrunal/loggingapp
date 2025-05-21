@@ -84,14 +84,14 @@ function buildWhereClause(filters, db) {
     params.push(filters.end_time);
   }
 
-  if (filters.min_response_time) {
-    conditions.push(`${getQI('response_time', db)} >= ?`);
-    params.push(filters.min_response_time);
+  if (filters.min_response_time_ms) {
+    conditions.push(`${getQI('response_time_ms', db)} >= ?`);
+    params.push(filters.min_response_time_ms);
   }
 
-  if (filters.max_response_time) {
-    conditions.push(`${getQI('response_time', db)} <= ?`);
-    params.push(filters.max_response_time);
+  if (filters.max_response_time_ms) {
+    conditions.push(`${getQI('response_time_ms', db)} <= ?`);
+    params.push(filters.max_response_time_ms);
   }
 
   // Add request search condition
@@ -99,6 +99,8 @@ function buildWhereClause(filters, db) {
     conditions.push(`${getQI('request', db)} LIKE ?`);
     params.push(`%${filters.request_search}%`);
   }
+
+  
 
   return {
     whereClause: conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '',
@@ -139,11 +141,15 @@ app.get('/logs', validateQueryParams, async (req, res, next) => {
     const sortBy = req.query.sortBy || 'time';
     const sortOrder = req.query.sortOrder === 'asc' ? 'ASC' : 'DESC';
 
+    // Log incoming query parameters
+
     const { whereClause, params } = buildWhereClause(req.query, db);
 
+    // Fix table name construction
     const table = `${schema(db)}.${getQI('peps.application_logs', db)}`;
     const quotedSortBy = getQI(sortBy, db);
 
+    // Log the query for debugging
     let countSql = `SELECT COUNT(*) as count FROM ${table} ${whereClause}`;
     let logsSql = `SELECT ${getQI('UUID', db)}, ${getQI('time', db)}, ${getQI('component_name', db)}, ${getQI('method', db)}, ${getQI('organization_id', db)}, ${getQI('organization_name', db)}, ${getQI('protocol', db)}, ${getQI('request', db)}, ${getQI('request_host', db)}, ${getQI('request_received_at', db)}, ${getQI('response_sent_at', db)}, ${getQI('response_status', db)}, ${getQI('response_time_ms', db)}, ${getQI('space_id', db)}, ${getQI('space_name', db)}, ${getQI('written_at', db)} FROM ${table} ${whereClause} ORDER BY ${quotedSortBy} ${sortOrder} LIMIT ${pageSize} OFFSET ${offset}`;
 

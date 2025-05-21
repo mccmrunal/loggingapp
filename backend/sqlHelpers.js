@@ -1,5 +1,7 @@
-
 function getQI(ident, db) {
+  // Remove any existing quotes to prevent double-quoting
+  ident = ident.replace(/[`"]/g, '');
+  
   if (db === 'mysql1' || db === 'mysql2' || db === 'mysql3') return `\`${ident}\``;
   if (db === 'hana' || db === 'pg') return `"${ident}"`;
   return ident;

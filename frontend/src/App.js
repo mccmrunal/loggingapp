@@ -139,7 +139,7 @@ function App() {
 
   const handleFilterChange = (field, value) => {
     // Convert response time values to numbers
-    if (field === 'min_response_time' || field === 'max_response_time') {
+    if (field === 'min_response_time_ms' || field === 'max_response_time_ms') {
       value = value === '' ? '' : Number(value);
     }
     setTempFilters(prev => ({
@@ -151,16 +151,19 @@ function App() {
   const applyFilters = () => {
     // Clean up response time filters before applying
     const cleanedFilters = { ...tempFilters };
-    if (cleanedFilters.min_response_time === '') delete cleanedFilters.min_response_time;
-    if (cleanedFilters.max_response_time === '') delete cleanedFilters.max_response_time;
+    if (cleanedFilters.min_response_time_ms === '') delete cleanedFilters.min_response_time_ms;
+    if (cleanedFilters.max_response_time_ms === '') delete cleanedFilters.max_response_time_ms;
     
     // Ensure min is not greater than max
-    if (cleanedFilters.min_response_time && cleanedFilters.max_response_time) {
-      if (cleanedFilters.min_response_time > cleanedFilters.max_response_time) {
+    if (cleanedFilters.min_response_time_ms && cleanedFilters.max_response_time_ms) {
+      if (cleanedFilters.min_response_time_ms > cleanedFilters.max_response_time_ms) {
         setError('Minimum response time cannot be greater than maximum response time');
         return;
       }
     }
+
+    // Log the filters for debugging
+    console.log('Applying filters:', cleanedFilters);
 
     setFilters(cleanedFilters);
     setPagination(prev => ({ ...prev, page: 1 })); // Reset to first page when filters change
@@ -317,8 +320,8 @@ function App() {
                 <label>Min RT (ms)</label>
                 <input
                   type="number"
-                  value={tempFilters.min_response_time || ''}
-                  onChange={e => handleFilterChange('min_response_time', e.target.value)}
+                  value={tempFilters.min_response_time_ms || ''}
+                  onChange={e => handleFilterChange('min_response_time_ms', e.target.value)}
                   className="filter-input"
                   placeholder="Min"
                   min="0"
@@ -328,8 +331,8 @@ function App() {
                 <label>Max RT (ms)</label>
                 <input
                   type="number"
-                  value={tempFilters.max_response_time || ''}
-                  onChange={e => handleFilterChange('max_response_time', e.target.value)}
+                  value={tempFilters.max_response_time_ms || ''}
+                  onChange={e => handleFilterChange('max_response_time_ms', e.target.value)}
                   className="filter-input"
                   placeholder="Max"
                   min="0"
