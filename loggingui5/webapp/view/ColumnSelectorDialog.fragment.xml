@@ -1,0 +1,24 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core">
+    <ViewSettingsDialog
+        id="columnSelectorDialog"
+        title="Select Columns to Display"
+        confirm=".onColumnSelectorConfirm">
+        <filterItems>
+            <!-- We are using this for columns, not filters, so this section might seem misused but it's standard for column selection with ViewSettingsDialog -->
+            <ViewSettingsFilterItem
+                text="Columns"
+                key="columnKey"
+                multiSelect="true"
+                items="{dialogModel>/columns}">
+                <items>
+                    <ViewSettingsItem
+                        text="{dialogModel>label}"
+                        key="{dialogModel>key}"
+                        selected="{dialogModel>visible}" />
+                </items>
+            </ViewSettingsFilterItem>
+        </filterItems>
+    </ViewSettingsDialog>
+</core:FragmentDefinition>

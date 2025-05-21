@@ -1,0 +1,311 @@
+<mvc:View
+    controllerName="loggingui5.controller.Main"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    xmlns:l="sap.ui.layout"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:core="sap.ui.core"
+    xmlns:t="sap.ui.table"
+    height="100%">
+    <Page id="page" title="Application Logs Viewer" showHeader="true" enableScrolling="true" class="sapUiContentPadding">
+        <customHeader>
+            <Bar>
+                <contentLeft>
+                    <Title text="Application Logs Viewer" level="H1" />
+                    <Label text="Monitor and analyze your application logs in real-time" class="headerSubtitle" />
+                </contentLeft>
+                <contentRight>
+                    <Select
+                        id="dbSelector"
+                        selectedKey="{filtersModel>/selectedDb}"
+                        change=".onDbChange"
+                        items="{filtersModel>/databases}">
+                        <core:Item key="{filtersModel>id}" text="{filtersModel>name}" />
+                    </Select>
+                    <Button 
+                        icon="{= ${filtersModel>/showFilters} ? 'sap-icon://hide' : 'sap-icon://show' }"
+                        text="{= ${filtersModel>/showFilters} ? 'Hide Filters' : 'Show Filters' }"
+                        press=".onToggleFilters" />
+                    <Button 
+                        icon="{= ${filtersModel>/theme} === 'light' ? 'sap-icon://journey-arrive' : 'sap-icon://journey-change' }"
+                        text="{= ${filtersModel>/theme} === 'light' ? 'Dark Mode' : 'Light Mode' }"
+                        press=".onToggleTheme" />
+                </contentRight>
+            </Bar>
+        </customHeader>
+        
+        <MessageStrip
+            id="errorMessage"
+            text="{logsModel>/error}"
+            type="Error"
+            showIcon="true"
+            visible="{= !!${logsModel>/error} }"
+            class="sapUiSmallMarginBottom"
+            close=".onClearError" />
+
+        <VBox visible="{filtersModel>/showFilters}">
+            <OverflowToolbar class="sapUiSmallMarginBottom">
+                <Input
+                    value="{filtersModel>/tempFilters/request_search}"
+                    placeholder="Search Request..."
+                    width="12em"
+                    change=".onFilterChange">
+                    <customData>
+                        <core:CustomData key="fieldName" value="request_search" />
+                    </customData>
+                </Input>
+                <Select
+                    id="componentDropdown"
+                    selectedKey="{filtersModel>/tempFilters/component_name}"
+                    items="{logsModel>/components}"
+                    width="10em"
+                    change=".onFilterChange">
+                    <customData>
+                        <core:CustomData key="fieldName" value="component_name" />
+                    </customData>
+                    <items>
+                        <core:Item key="{logsModel>key}" text="{logsModel>text}" />
+                    </items>
+                </Select>
+                <Select
+                    id="methodDropdown"
+                    selectedKey="{filtersModel>/tempFilters/method}"
+                    items="{logsModel>/methods}"
+                    width="8em"
+                    change=".onFilterChange">
+                    <customData>
+                        <core:CustomData key="fieldName" value="method" />
+                    </customData>
+                    <items>
+                        <core:Item key="{logsModel>key}" text="{logsModel>text}" />
+                    </items>
+                </Select>
+                <Select
+                    id="statusCodeDropdown"
+                    selectedKey="{filtersModel>/tempFilters/response_status}"
+                    items="{logsModel>/statusCodes}"
+                    width="8em"
+                    change=".onFilterChange">
+                    <customData>
+                        <core:CustomData key="fieldName" value="response_status" />
+                    </customData>
+                    <items>
+                        <core:Item key="{logsModel>key}" text="{logsModel>text}" />
+                    </items>
+                </Select>
+                <DateTimePicker
+                    value="{filtersModel>/tempFilters/start_time}"
+                    placeholder="From Date/Time"
+                    width="14em"
+                    change=".onFilterChange">
+                    <customData>
+                        <core:CustomData key="fieldName" value="start_time" />
+                    </customData>
+                </DateTimePicker>
+                <DateTimePicker
+                    value="{filtersModel>/tempFilters/end_time}"
+                    placeholder="To Date/Time"
+                    width="14em"
+                    change=".onFilterChange">
+                    <customData>
+                        <core:CustomData key="fieldName" value="end_time" />
+                    </customData>
+                </DateTimePicker>
+                <Input
+                    type="Number"
+                    value="{filtersModel>/tempFilters/min_response_time_ms}"
+                    placeholder="Min RT (ms)"
+                    width="8em"
+                    change=".onFilterChange">
+                    <customData>
+                        <core:CustomData key="fieldName" value="min_response_time_ms" />
+                    </customData>
+                </Input>
+                <Input
+                    type="Number"
+                    value="{filtersModel>/tempFilters/max_response_time_ms}"
+                    placeholder="Max RT (ms)"
+                    width="8em"
+                    change=".onFilterChange">
+                    <customData>
+                        <core:CustomData key="fieldName" value="max_response_time_ms" />
+                    </customData>
+                </Input>
+                <ToolbarSpacer />
+                <Button 
+                    text="✨ Apply"
+                    type="Emphasized"
+                    press=".onApplyFilters"
+                    class="sapUiTinyMarginBeginEnd" />
+                <Button 
+                    text="🗑️ Clear"
+                    press=".onClearFilters"
+                    class="sapUiTinyMarginBeginEnd" />
+            </OverflowToolbar>
+        </VBox>
+        
+        <t:Table
+            id="logTable"
+            rows="{logsModel>/logs}"
+            selectionMode="None"
+            visibleRowCount="{= parseInt(${logsModel>/pagination/pageSize}) }"
+            ariaLabelledBy="title"
+            enableBusyIndicator="true"
+            busy="{logsModel>/loading}"
+            class="logTable">
+            <t:toolbar>
+                <OverflowToolbar>
+                    <ToolbarSpacer/>
+                    <Button icon="sap-icon://action-settings" press=".onOpenColumnSelector" tooltip="Select Columns"/>
+                </OverflowToolbar>
+            </t:toolbar>
+            <t:columns>
+                <t:Column width="15rem" sortProperty="UUID" visible="{logsModel>/columnConfig/uuid/visible}">
+                    <Label text="UUID" />
+                    <t:template>
+                        <Text text="{logsModel>UUID}" wrapping="false" />
+                    </t:template>
+                </t:Column>
+                
+                <t:Column width="10rem" sortProperty="time" visible="{logsModel>/columnConfig/time/visible}">
+                    <Label text="Time" />
+                    <t:template>
+                        <Text text="{path:'logsModel>time', formatter:'.formatter.formatDate'}" wrapping="false" />
+                    </t:template>
+                </t:Column>
+                
+                <t:Column width="10rem" sortProperty="component_name" visible="{logsModel>/columnConfig/component_name/visible}">
+                    <Label text="Component" />
+                    <t:template>
+                        <Text text="{logsModel>component_name}" wrapping="false" />
+                    </t:template>
+                </t:Column>
+                
+                <t:Column width="6rem" sortProperty="method" visible="{logsModel>/columnConfig/method/visible}">
+                    <Label text="Method" />
+                    <t:template>
+                        <Text text="{logsModel>method}" wrapping="false" />
+                    </t:template>
+                </t:Column>
+                
+                <t:Column width="8rem" sortProperty="organization_id" visible="{logsModel>/columnConfig/organization_id/visible}">
+                    <Label text="Org ID" />
+                    <t:template>
+                        <Text text="{logsModel>organization_id}" wrapping="false" />
+                    </t:template>
+                </t:Column>
+                
+                <t:Column width="10rem" sortProperty="organization_name" visible="{logsModel>/columnConfig/organization_name/visible}">
+                    <Label text="Org Name" />
+                    <t:template>
+                        <Text text="{logsModel>organization_name}" wrapping="false" />
+                    </t:template>
+                </t:Column>
+                
+                <t:Column width="11rem" sortProperty="request_received_at" visible="{logsModel>/columnConfig/request_received_at/visible}">
+                    <Label text="Request Received" />
+                    <t:template>
+                        <Text text="{path:'logsModel>request_received_at', formatter:'.formatter.formatDate'}" wrapping="false" />
+                    </t:template>
+                </t:Column>
+                
+                <t:Column width="11rem" sortProperty="response_sent_at" visible="{logsModel>/columnConfig/response_sent_at/visible}">
+                    <Label text="Response Sent" />
+                    <t:template>
+                        <Text text="{path:'logsModel>response_sent_at', formatter:'.formatter.formatDate'}" wrapping="false" />
+                    </t:template>
+                </t:Column>
+                
+                <t:Column width="5rem" sortProperty="response_status" visible="{logsModel>/columnConfig/response_status/visible}">
+                    <Label text="Status" />
+                    <t:template>
+                        <ObjectStatus 
+                            text="{logsModel>response_status}" 
+                            state="{path:'logsModel>response_status', formatter:'.formatter.formatStatusState'}" />
+                    </t:template>
+                </t:Column>
+                
+                <t:Column width="8rem" sortProperty="response_time_ms" visible="{logsModel>/columnConfig/response_time_ms/visible}">
+                    <Label text="Resp Time (ms)" />
+                    <t:template>
+                        <Text text="{logsModel>response_time_ms}" wrapping="false" />
+                    </t:template>
+                </t:Column>
+                
+                <t:Column width="8rem" sortProperty="space_id" visible="{logsModel>/columnConfig/space_id/visible}">
+                    <Label text="Space ID" />
+                    <t:template>
+                        <Text text="{logsModel>space_id}" wrapping="false" />
+                    </t:template>
+                </t:Column>
+                
+                <t:Column width="10rem" sortProperty="user_name" visible="{logsModel>/columnConfig/user_name/visible}">
+                    <Label text="User Name" />
+                    <t:template>
+                        <Text text="{logsModel>user_name}" wrapping="false" />
+                    </t:template>
+                </t:Column>
+                
+                <t:Column width="10rem" sortProperty="space_name" visible="{logsModel>/columnConfig/space_name/visible}">
+                    <Label text="Space Name" />
+                    <t:template>
+                        <Text text="{logsModel>space_name}" wrapping="false" />
+                    </t:template>
+                </t:Column>
+                
+                <t:Column width="11rem" sortProperty="written_at" visible="{logsModel>/columnConfig/written_at/visible}">
+                    <Label text="Written At" />
+                    <t:template>
+                        <Text text="{path:'logsModel>written_at', formatter:'.formatter.formatDate'}" wrapping="false" />
+                    </t:template>
+                </t:Column>
+                
+                <t:Column width="8rem" sortProperty="protocol" visible="{logsModel>/columnConfig/protocol/visible}">
+                    <Label text="Protocol" />
+                    <t:template>
+                        <Text text="{logsModel>protocol}" wrapping="false" />
+                    </t:template>
+                </t:Column>
+                
+                <t:Column width="15rem" hAlign="Begin" visible="{logsModel>/columnConfig/request_path/visible}">
+                    <Label text="Request Path" />
+                    <t:template>
+                        <Text text="{logsModel>request_path}" wrapping="true" />
+                    </t:template>
+                </t:Column>
+                
+                <t:Column width="20rem" visible="{logsModel>/columnConfig/request_details/visible}">
+                    <Label text="Request" />
+                    <t:template>
+                        <Text text="{logsModel>request}" wrapping="true" />
+                    </t:template>
+                </t:Column>
+                
+                <t:Column width="10rem" visible="{logsModel>/columnConfig/request_host/visible}">
+                    <Label text="Request Host" />
+                    <t:template>
+                        <Text text="{logsModel>request_host}" wrapping="false" />
+                    </t:template>
+                </t:Column>
+            </t:columns>
+        </t:Table>
+
+        <footer>
+            <Bar>
+                <contentLeft>
+                    <Button text="Previous" press=".onPreviousPage" enabled="{= ${logsModel>/pagination/page} > 1 }" type="Transparent"/>
+                </contentLeft>
+                <contentMiddle>
+                    <Text text="Page {logsModel>/pagination/page} of {logsModel>/pagination/totalPages} ({logsModel>/pagination/totalItems} items)" visible="{= ${logsModel>/pagination/totalItems} > 0 &amp;&amp; ${logsModel>/pagination/totalPages} > 0}" class="sapUiSmallMarginBeginEnd"/>
+                    <Text text="No logs found" visible="{= !(${logsModel>/pagination/totalItems} > 0) }" class="sapUiSmallMarginBeginEnd"/>
+                </contentMiddle>
+                <contentRight>
+                    <Button text="Next →" press=".onNextPage" enabled="{= ${logsModel>/pagination/page} &lt; ${logsModel>/pagination/totalPages} }" type="Transparent" class="sapUiSmallMarginEnd"/>
+                    <Select id="pageSizeSelect" items="{logsModel>/pageSizes}" selectedKey="{logsModel>/pagination/pageSize}" change=".onPageSizeChange" width="120px">
+                        <core:Item key="{logsModel>key}" text="{logsModel>text}"/>
+                    </Select>
+                </contentRight>
+            </Bar>
+        </footer>
+    </Page>
+</mvc:View>

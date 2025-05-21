@@ -1,0 +1,14 @@
+{
+  "name": "loggingui5",
+  "version": "1.0.0",
+  "description": "Logging App UI5 Version",
+  "private": true,
+  "scripts": {
+    "start": "ui5 serve --config=ui5.yaml"
+  },
+  "devDependencies": {
+    "@ui5/cli": "^3.0.0",
+    "@ui5/fs": "^3.0.0",
+    "@sap/ux-ui5-tooling": "^1.11.0"
+  }
+}

@@ -147,4 +147,4 @@ mysqlPools.mysql1.getConnection()
     console.error('Error connecting to the database:', err);
   });
 
-module.exports = { hanaConn, pgPool, mysqlPools, getDbConnection }; 
+module.exports = { hanaConn, pgPool, mysqlPools, getDbConnection };

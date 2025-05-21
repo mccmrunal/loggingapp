@@ -1,0 +1,75 @@
+{
+  "sap.app": {
+    "id": "loggingui5",
+    "type": "application",
+    "i18n": "i18n/i18n.properties",
+    "title": "Application Logs Viewer",
+    "description": "Monitor and analyze your application logs in real-time",
+    "applicationVersion": {
+      "version": "1.0.0"
+    }
+  },
+  "sap.ui": {
+    "technology": "UI5",
+    "deviceTypes": {
+      "desktop": true,
+      "tablet": true,
+      "phone": true
+    }
+  },
+  "sap.ui5": {
+    "rootView": {
+      "viewName": "loggingui5.view.App",
+      "type": "XML",
+      "id": "app"
+    },
+    "dependencies": {
+      "minUI5Version": "1.108.0",
+      "libs": {
+        "sap.ui.core": {},
+        "sap.m": {},
+        "sap.ui.layout": {},
+        "sap.ui.table": {}
+      }
+    },
+    "models": {
+      "i18n": {
+        "type": "sap.ui.model.resource.ResourceModel",
+        "settings": {
+          "bundleName": "loggingui5.i18n.i18n"
+        }
+      },
+      "logsModel": {
+        "type": "sap.ui.model.json.JSONModel",
+        "settings": {}
+      },
+      "filtersModel": {
+        "type": "sap.ui.model.json.JSONModel",
+        "settings": {}
+      }
+    },
+    "routing": {
+      "config": {
+        "routerClass": "sap.m.routing.Router",
+        "viewType": "XML",
+        "viewPath": "loggingui5.view",
+        "controlId": "app",
+        "controlAggregation": "pages",
+        "async": true
+      },
+      "routes": [
+        {
+          "pattern": "",
+          "name": "main",
+          "target": "main"
+        }
+      ],
+      "targets": {
+        "main": {
+          "viewId": "main",
+          "viewName": "Main"
+        }
+      }
+    }
+  }
+}
